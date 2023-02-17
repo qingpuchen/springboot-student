@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { Table, Space, Button, Popconfirm } from 'antd'
+import { Table, Space, Button, Popconfirm, Input } from 'antd'
 import 'isomorphic-fetch';
 // import ReactDOM from 'react-dom';
 import 'element-theme-default';
@@ -40,19 +40,44 @@ const columns = [
 
 // }
 
+const endpoint = 'http://localhost:8080'
+
 export default class stuList extends Component{
     constructor() {
         super();
         this.state = {
             open: false,
             isEdit: false,
-            record: null
+            record: null,
+            students: [],
+            originStudents: []
         }
     }
 
+    async getList() {
+        const students = await (await fetch(`${endpoint}/user/list`)).json();//主要是从后台拿json数据
+        this.setState({students, originStudents:students});
+    }
+
+    getFilter(val) {
+        // 搜索姓名
+        console.log(val)
+        let students = []
+        this.state.originStudents.forEach((item) => {
+            if(!val) {
+                this.getList()
+            }
+            if(item.username.indexOf(val)>-1) {
+                students.push(item)
+            }
+        })
+        this.setState({students})
+    }
+
     async componentDidMount() {
-        let students = await (await fetch('/api/user/list')).json();//主要是从后台拿json数据
-        this.setState({students});
+        // let students = await (await this.getList()).json();
+        // this.setState({students});
+        this.getList()
     }
 
     hideModal = ()=> {
@@ -65,7 +90,7 @@ export default class stuList extends Component{
 
      onCreate = async (values) =>  {
         console.log('Received values of form: ', values);
-        const apiUrl = values.id ? '/api/user/edit' : '/api/user/add'
+        const apiUrl = values.id ? `${endpoint}/user/updateUser` : `${endpoint}/user/add`
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
@@ -73,8 +98,9 @@ export default class stuList extends Component{
             }, 
             body: JSON.stringify(values)
           });
-          console.log(await response.json(),'response')
         this.hideModal();
+
+        this.getList()
     };
 
     editModal = (record)=> {
@@ -88,14 +114,12 @@ export default class stuList extends Component{
     deleteItem = async (values) => {
         console.log('Received values of form: ', values);
         // const apiUrl = values.id ? '/api/user/edit' : '/api/user/add'
-        const response = await fetch('/api/user/delete', {
-            method: 'POST',
-            headers: {
-             'Content-Type': 'application/json;charset=utf-8'
-            }, 
-            body: JSON.stringify(values)
+        const response = await fetch(`${endpoint}/user/delete/${values.id}`, {
+            method: 'delete',
           });
-          console.log(await response.json(),'response')
+
+          this.getList()
+        //   console.log(await response.json(),'response')
     }
 
     initColumn() {
@@ -122,12 +146,16 @@ export default class stuList extends Component{
         ])
     }
 
+
     render() {
         let {students = []} = this.state;
 
         return (
             <div>
-                <Button onClick={this.showModal}>新增</Button>
+                <Space>
+                    <Button onClick={this.showModal} type="primary">新增</Button>
+                    <Input.Search onSearch={(val) => this.getFilter(val)} placeholder="请输入姓名进行搜索"/>
+                </Space>
                 <StuItemModal open={this.state.open} onCancel={this.hideModal} onCreate={this.onCreate} record={this.state.record}/>
                 <Table columns={this.initColumn()} dataSource={students} rowKey="id" />
             </div>
