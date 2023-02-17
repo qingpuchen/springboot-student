@@ -1,0 +1,11 @@
+table{
+    width: 100%;
+    border-bottom: 1px;
+}
+.child1{
+    width: 90%;
+    height: 90%;
+}
+td{
+    text-align: center;
+}
