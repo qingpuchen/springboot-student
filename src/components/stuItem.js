@@ -1,5 +1,5 @@
-import React, { Component, useRef,useEffect } from 'react';
-import { Button, Radio, Form, Input, Modal, InputNumber } from 'antd';
+import React, { useRef, useEffect } from 'react';
+import { Radio, Form, Input, Modal, InputNumber } from 'antd';
 
 
 
@@ -24,13 +24,19 @@ const SEX_TYPE = {
 }
 
 export const StuItemModal = ({ open, onCreate, onCancel, record }) => {
-    const [form] = Form.useForm();
-    useResetFormOnCloseModal({
-      form,
-      open,
-    });
+    console.log(record,'record111');
+
+    const [ form ] = Form.useForm();
+    // useResetFormOnCloseModal({
+    //   form,
+    //   open,
+    // });
+
+    if(record) {
+      form.setFieldsValue({...record})
+    }
     const onOk = () => {
-    //   form.submit();
+    // form.submit();
       form
           .validateFields()
           .then((values) => {
@@ -41,13 +47,19 @@ export const StuItemModal = ({ open, onCreate, onCancel, record }) => {
             console.log('Validate Failed:', info);
           });
     };
+    const onCancelModal = () => {
+      // form.resetFields();
+      // record = null
+      form.setFieldsValue({username:'', age: null, sex: null, password: ''})
+      onCancel()
+    }
     return (
-      <Modal title="Basic Drawer" open={open} onOk={onOk} onCancel={onCancel} >
+      <Modal title="Basic Drawer" open={open} onOk={onOk} onCancel={onCancelModal} >
         <Form form={form}  name="userForm">
         <Form.Item
             label="Username"
             name="username"
-            initialValue={record ? record.username: ''}
+            
             rules={[
                 {
                 required: true,
@@ -62,7 +74,7 @@ export const StuItemModal = ({ open, onCreate, onCancel, record }) => {
             <Form.Item
             label="Password"
             name="password"
-            initialValue={record ? record.password: ''}
+            
             rules={[
                 {
                 required: true,
@@ -76,7 +88,7 @@ export const StuItemModal = ({ open, onCreate, onCancel, record }) => {
             <Form.Item
             label="年龄"
             name="age"
-            initialValue={record ? record.age: ''}
+            
             rules={[
                 {
                 required: true,
@@ -90,7 +102,7 @@ export const StuItemModal = ({ open, onCreate, onCancel, record }) => {
             <Form.Item 
                 label="性别" 
                 name="sex"
-                initialValue={record ? record.sex: ''}
+                
                 rules={[
                 {
                     required: true,

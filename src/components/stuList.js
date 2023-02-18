@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import { Table, Space, Button, Popconfirm, Input } from 'antd'
 import 'isomorphic-fetch';
-// import ReactDOM from 'react-dom';
 import 'element-theme-default';
 import { StuItemModal } from './stuItem'
 import './stuList.css';
@@ -36,10 +35,6 @@ const columns = [
     
 ];
 
-// const api = {
-
-// }
-
 const endpoint = 'http://localhost:8080'
 
 export default class stuList extends Component{
@@ -56,7 +51,7 @@ export default class stuList extends Component{
 
     async getList() {
         const students = await (await fetch(`${endpoint}/user/list`)).json();//主要是从后台拿json数据
-        this.setState({students, originStudents:students});
+        this.setState({ students, originStudents:students});
     }
 
     getFilter(val) {
@@ -75,13 +70,11 @@ export default class stuList extends Component{
     }
 
     async componentDidMount() {
-        // let students = await (await this.getList()).json();
-        // this.setState({students});
         this.getList()
     }
 
     hideModal = ()=> {
-        this.setState({ open: false, isEdit: false })
+        this.setState({ open: false, isEdit: false, record: null })
     }
 
     showModal = ()=> {
@@ -91,7 +84,7 @@ export default class stuList extends Component{
      onCreate = async (values) =>  {
         console.log('Received values of form: ', values);
         const apiUrl = this.isEdit ? `${endpoint}/user/updateUser` : `${endpoint}/user/add`
-        const response = await fetch(apiUrl, {
+        await fetch(apiUrl, {
             method: 'POST',
             headers: {
              'Content-Type': 'application/json;charset=utf-8'
@@ -99,7 +92,6 @@ export default class stuList extends Component{
             body: JSON.stringify(values)
           });
         this.hideModal();
-
         this.getList()
     };
 
@@ -110,22 +102,19 @@ export default class stuList extends Component{
     }
 
     editModal = (record)=> {
+        this.setState({ record: null })
         this.isEdit = true;
-        this.setState({ record }, ()=>{
-            this.showModal()
-        })
+        this.setState({ record: Object.assign({}, record) })
+        this.showModal()
         console.log(record)
     }
 
     deleteItem = async (values) => {
         console.log('Received values of form: ', values);
-        // const apiUrl = values.id ? '/api/user/edit' : '/api/user/add'
-        const response = await fetch(`${endpoint}/user/delete/${values.id}`, {
+        await fetch(`${endpoint}/user/delete/${values.id}`, {
             method: 'delete',
-          });
-
-          this.getList()
-        //   console.log(await response.json(),'response')
+        });
+        this.getList()
     }
 
     initColumn() {
@@ -136,7 +125,6 @@ export default class stuList extends Component{
                 render: (_, record) => (
                   <Space size="middle">
                     <a onClick={this.editModal.bind(this, record)}>编辑</a>
-                    
                     <Popconfirm
                         title="Delete the task"
                         description="Are you sure to delete this user?"
@@ -148,14 +136,13 @@ export default class stuList extends Component{
                     </Popconfirm>
                   </Space>
                 ),
-              },
+            },
         ])
     }
 
 
     render() {
-        let {students = []} = this.state;
-
+        let { students = [] } = this.state;
         return (
             <div>
                 <Space>
