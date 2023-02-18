@@ -90,7 +90,7 @@ export default class stuList extends Component{
 
      onCreate = async (values) =>  {
         console.log('Received values of form: ', values);
-        const apiUrl = values.id ? `${endpoint}/user/updateUser` : `${endpoint}/user/add`
+        const apiUrl = this.isEdit ? `${endpoint}/user/updateUser` : `${endpoint}/user/add`
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
@@ -103,11 +103,17 @@ export default class stuList extends Component{
         this.getList()
     };
 
+    addModal = () => {
+        this.isEdit = false;
+        this.setState({ record: null })
+        this.showModal()
+    }
+
     editModal = (record)=> {
         this.isEdit = true;
-        this.setState({ record })
-        this.showModal()
-        
+        this.setState({ record }, ()=>{
+            this.showModal()
+        })
         console.log(record)
     }
 
@@ -153,7 +159,7 @@ export default class stuList extends Component{
         return (
             <div>
                 <Space>
-                    <Button onClick={this.showModal} type="primary">新增</Button>
+                    <Button onClick={this.addModal} type="primary">新增</Button>
                     <Input.Search onSearch={(val) => this.getFilter(val)} placeholder="请输入姓名进行搜索"/>
                 </Space>
                 <StuItemModal open={this.state.open} onCancel={this.hideModal} onCreate={this.onCreate} record={this.state.record}/>
